@@ -10,4 +10,20 @@ Projeto desenvolvido para testes de consumo de api e algumas funcionalidades que
 
 # Mockup
 
-<!--<img src="https://github.com/GabrielHR0sa/API_consume_flutter/blob/main/mockup/mockup_nfError.png?raw=true">-->
+## Aplicativo master
+
+`light theme`
+
+<img src="https://github.com/GabrielHR0sa/API_consume_flutter/blob/main/mockup/master-light.png?raw=true">
+
+`dark theme`
+
+<img src="https://github.com/GabrielHR0sa/API_consume_flutter/blob/main/mockup/master-dark.png?raw=true">
+
+## Aplicativo user
+
+<img src="https://github.com/GabrielHR0sa/API_consume_flutter/blob/main/mockup/user.png?raw=true">
+
+## Página de configurações
+
+<img src="https://github.com/GabrielHR0sa/API_consume_flutter/blob/main/mockup/configs.png?raw=true">
