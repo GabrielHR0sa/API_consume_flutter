@@ -6,16 +6,12 @@ class UserModel {
   final String nomusu;
   final String logusu;
   final String senusu;
-  final String datcad;
-  final bool usuati;
 
   UserModel({
     this.codusu = 0,
     this.nomusu = '',
     this.logusu = '',
     this.senusu = '',
-    this.datcad = '',
-    this.usuati = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -24,8 +20,6 @@ class UserModel {
       'nomusu': nomusu,
       'logusu': logusu,
       'senusu': senusu,
-      'datcad': datcad,
-      'usuati': usuati,
     };
   }
 
@@ -35,20 +29,11 @@ class UserModel {
       nomusu: map['nomusu'] as String,
       logusu: map['logusu'] as String,
       senusu: map['senusu'] as String,
-      datcad: map['datcad'] as String,
-      usuati: map['usuati'] as bool,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory UserModel.fromJson(dynamic json) {
-    return UserModel(
-      codusu: json['codusu'],
-      nomusu: json['nomusu'],
-      logusu: json['logusu'],
-      datcad: json['datcad'],
-      usuati: json['usuati'],
-    );
-  }
+  factory UserModel.fromJson(String source) =>
+      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }

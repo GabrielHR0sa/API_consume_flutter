@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, unnecessary_null_comparison
+
 import 'dart:async';
 
 import 'package:crud_local/src/models/error_model.dart';
@@ -10,6 +12,7 @@ class ErrorService extends ChangeNotifier {
   var headers = {'content-type': 'application/json'};
   final dio = Dio();
   var _model = ErrorModel();
+
   var result = 0;
   var content = '';
   var resultdb;
@@ -42,6 +45,24 @@ class ErrorService extends ChangeNotifier {
       coderr: _model.coderr,
       deserr: _model.deserr,
     );
+  }
+
+  getSolution(String TipoPes) async {
+    SharedPreferences _sharedPreferences =
+        await SharedPreferences.getInstance();
+    final token = await _sharedPreferences.getString('token');
+    var IpConf = _sharedPreferences.getString('IP');
+    String IP = '$IpConf';
+
+    var headers = {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json"
+    };
+
+    var response = await http.get(Uri.parse('http://$IP/buscasolucao$TipoPes'),
+        headers: headers);
+    print(response.statusCode);
+    return response;
   }
 
   Future<void> addError() async {
@@ -89,6 +110,7 @@ class ErrorService extends ChangeNotifier {
       Response response;
 
       if (deser != '' && soler != '') {
+        //edição dos dois campos
         response = await dio.put('http://$IP/erro/crud/$cod',
             data: {"deserr": deser, "solerr": soler},
             options: Options(headers: {
@@ -99,6 +121,7 @@ class ErrorService extends ChangeNotifier {
         print(response.statusCode);
         teste = true;
       } else if (deser == '' && soler != '') {
+        //edição sem descrição
         response = await dio.put('http://$IP/erro/crud/$cod',
             data: {"solerr": soler},
             options: Options(headers: {
@@ -109,6 +132,7 @@ class ErrorService extends ChangeNotifier {
         print(response.statusCode);
         teste = true;
       } else if (deser != '' && soler == '') {
+        //edição sem solução
         response = await dio.put('http://$IP/erro/crud/$cod',
             data: {"deserr": deser},
             options: Options(headers: {
@@ -167,13 +191,15 @@ class ErrorService extends ChangeNotifier {
       "Content-Type": "application/json"
     };
 
-    if (TipoPes == '' || TipoPes == null) {
+    if (TipoPes == '') {
+      //se filtro vazio, mostra todos
       var response =
           await http.get(Uri.parse('http://$IP/erro/crud'), headers: headers);
 
       print(response.statusCode);
       return response;
     } else if (TipoPes == '?deserr=null') {
+      //se filtro nulo, mostra somente os nulos
       var response = await http
           .get(Uri.parse('http://$IP/erro/crud?deserr=null'), headers: headers);
 
@@ -190,23 +216,32 @@ class ErrorService extends ChangeNotifier {
 
 //------------------------------------------Auth-----------------------------------------------------------//
 
-  Future<void> tryPings() async {
+  /*
+    tryPings e tryDbs recebem passagem de parâmetro para permitir que
+    a verificação seja feita sem ter o ip salvo. recebendo o campo
+    da configuração após o fim da escrita.
+
+    Ping e DB somente realizam a verificação se o ip for salvo
+  */
+
+  Future<void> tryPings(String IP) async {
     SharedPreferences _sharedPreferences =
         await SharedPreferences.getInstance();
-    final IpConf = _sharedPreferences.getString('IP');
-    String IP = '$IpConf';
 
     try {
-      var response = await Future.wait([
-        dio.get('http://$IP/getsolution/ping').timeout(
-              const Duration(seconds: 2),
-            ),
-        dio.get('http://$IP/auth/ping').timeout(
-              const Duration(seconds: 2),
-            ),
-      ]);
-
-      resultpi = true;
+      if (IP == '' || IP == null) {
+        resultpi = null;
+      } else {
+        var response = await Future.wait([
+          dio.get('http://$IP/getsolution/ping').timeout(
+                const Duration(seconds: 5),
+              ),
+          dio.get('http://$IP/auth/ping').timeout(
+                const Duration(seconds: 5),
+              ),
+        ]);
+        resultpi = true;
+      }
     } on DioException {
       resultpi = false;
     } on TimeoutException {
@@ -215,38 +250,110 @@ class ErrorService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> tryDbs() async {
+  Future<void> tryDbs(String IP) async {
     SharedPreferences _sharedPreferences =
         await SharedPreferences.getInstance();
     final token = _sharedPreferences.getString('token');
-    final IpConf = _sharedPreferences.getString('IP');
+
+    try {
+      if (IP == '' || IP == null) {
+        resultdb = null;
+      } else {
+        var response = await Future.wait([
+          dio
+              .get('http://$IP/getsolution/testdb',
+                  options: Options(headers: {
+                    "Authorization": "Bearer $token",
+                    "Content-Type": "application/json"
+                  }))
+              .timeout(
+                const Duration(seconds: 5),
+              ),
+          dio
+              .get('http://$IP/auth/testdb',
+                  options: Options(headers: {
+                    "Authorization": "Bearer $token",
+                    "Content-Type": "application/json"
+                  }))
+              .timeout(
+                const Duration(seconds: 5),
+              ),
+        ]);
+
+        resultdb = true;
+      }
+    } on DioException {
+      resultdb = false;
+    } on TimeoutException {
+      resultdb = false;
+    }
+    notifyListeners();
+  }
+
+  Future<void> Ping() async {
+    SharedPreferences _sharedPreferences =
+        await SharedPreferences.getInstance();
+    final IpConf = await _sharedPreferences.getString('IP');
     String IP = '$IpConf';
 
     try {
-      var response = await Future.wait([
-        dio
-            .get('http://$IP/getsolution/testdb',
-                options: Options(headers: {
-                  "Authorization": "Bearer $token",
-                  "Content-Type": "application/json"
-                }))
-            .timeout(
-              const Duration(seconds: 2),
-            ),
-        dio
-            .get('http://$IP/auth/testdb',
-                options: Options(headers: {
-                  "Authorization": "Bearer $token",
-                  "Content-Type": "application/json"
-                }))
-            .timeout(
-              const Duration(seconds: 2),
-            ),
-      ]);
-
-      resultdb = true;
+      if (IP == '' || IP == null) {
+        resultpi = null;
+      } else {
+        var response = await Future.wait([
+          dio.get('http://$IP/getsolution/ping').timeout(
+                const Duration(seconds: 5),
+              ),
+          dio.get('http://$IP/auth/ping').timeout(
+                const Duration(seconds: 5),
+              ),
+        ]);
+        resultpi = true;
+      }
     } on DioException {
       resultpi = false;
+    } on TimeoutException {
+      resultpi = false;
+    }
+    notifyListeners();
+  }
+
+  Future<void> DB() async {
+    SharedPreferences _sharedPreferences =
+        await SharedPreferences.getInstance();
+    final token = _sharedPreferences.getString('token');
+    final IpConf = await _sharedPreferences.getString('IP');
+    String IP = '$IpConf';
+
+    try {
+      if (IP == '' || IP == null) {
+        resultdb = null;
+      } else {
+        var response = await Future.wait([
+          dio
+              .get('http://$IP/getsolution/testdb',
+                  options: Options(headers: {
+                    "Authorization": "Bearer $token",
+                    "Content-Type": "application/json"
+                  }))
+              .timeout(
+                const Duration(seconds: 5),
+              ),
+          dio
+              .get('http://$IP/auth/testdb',
+                  options: Options(headers: {
+                    "Authorization": "Bearer $token",
+                    "Content-Type": "application/json"
+                  }))
+              .timeout(
+                const Duration(seconds: 5),
+              ),
+        ]);
+
+        resultdb = true;
+      }
+    } on DioException {
+      resultdb = false;
     } on TimeoutException {
       resultdb = false;
     }

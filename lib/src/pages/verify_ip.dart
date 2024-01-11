@@ -1,9 +1,13 @@
+// ignore_for_file: must_call_super, no_leading_underscores_for_local_identifiers, unused_local_variable
+
 import 'dart:async';
 
 import 'package:crud_local/src/pages/auth/auth.dart';
-import 'package:crud_local/src/pages/config/config_auth.dart';
-import 'package:crud_local/src/pages/home_page.dart';
+import 'package:crud_local/src/pages/config/warning.dart';
+import 'package:crud_local/src/pages/rejection/home_page.dart';
+import 'package:crud_local/src/service/erro_service.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VerifyIp extends StatefulWidget {
@@ -13,10 +17,12 @@ class VerifyIp extends StatefulWidget {
   State<VerifyIp> createState() => _VerifyIpState();
 }
 
+final service = ErrorService();
+
 class _VerifyIpState extends State<VerifyIp> {
   @override
   void initState() {
-    super.initState();
+    _testIp();
     Timer(Duration(seconds: 2), () {
       tryIp().then((ip) async {
         if (ip == true) {
@@ -30,8 +36,8 @@ class _VerifyIpState extends State<VerifyIp> {
             }
           });
         } else {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => ConfigAuthPage()));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => WarningPage()));
         }
       });
     });
@@ -65,8 +71,13 @@ class _VerifyIpState extends State<VerifyIp> {
               const SizedBox(
                 height: 10,
               ),
-              const CircularProgressIndicator(
-                color: Colors.white,
+              const SizedBox(
+                height: 50,
+                width: 50,
+                child: LoadingIndicator(
+                  indicatorType: Indicator.ballRotateChase,
+                  colors: [Colors.white],
+                ),
               ),
               Container(
                 margin: EdgeInsets.all(10),
@@ -86,7 +97,9 @@ class _VerifyIpState extends State<VerifyIp> {
     SharedPreferences _sharedPreferences =
         await SharedPreferences.getInstance();
 
-    if (_sharedPreferences.getString('IP') == null) {
+    await service.Ping();
+
+    if (service.resultpi == false) {
       return false;
     } else {
       return true;
@@ -103,15 +116,31 @@ class _VerifyIpState extends State<VerifyIp> {
       return true;
     }
   }
+}
 
-  Future<bool> tryIni() async {
-    SharedPreferences _sharedPreferences =
-        await SharedPreferences.getInstance();
+_initialIP() async {
+  SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
 
-    if (_sharedPreferences.getString('onIni') == false) {
-      return false;
-    } else {
-      return true;
-    }
+  var IP = _sharedPreferences.setString('IP', '164.163.52.232:62000');
+  final teste = await _sharedPreferences.getString('IP');
+  print('INIT: $teste');
+  return teste;
+}
+
+_newIP() async {
+  SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
+  final teste = await _sharedPreferences.getString('IP');
+  print('NEW: $teste');
+  return teste;
+}
+
+_testIp() async {
+  SharedPreferences _sharedPreferences = await SharedPreferences.getInstance();
+
+  if (await _sharedPreferences.getString('IP') == "" ||
+      await _sharedPreferences.getString('IP') == null) {
+    _initialIP();
+  } else {
+    _newIP();
   }
 }

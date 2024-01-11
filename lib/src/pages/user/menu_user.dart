@@ -3,16 +3,17 @@ import 'package:crud_local/src/service/erro_service.dart';
 import 'package:crud_local/src/widgets/dialogs.dart';
 import 'package:flutter/material.dart';
 
-class Menu extends StatefulWidget {
-  const Menu({super.key});
+class MenuUser extends StatefulWidget {
+  const MenuUser({super.key});
 
   @override
-  State<Menu> createState() => _MenuState();
+  State<MenuUser> createState() => _MenuUserState();
 }
 
-class _MenuState extends State<Menu> {
+class _MenuUserState extends State<MenuUser> {
   final auth = AuthService();
   final service = ErrorService();
+  Map<String, dynamic> data = {};
 
   @override
   void initState() {
@@ -20,8 +21,7 @@ class _MenuState extends State<Menu> {
 
     service.addListener(() {
       if (service.resultpi == true) {
-        dialogs.success(
-            context, 'Sucesso', 'Api GetSolution: On \n Api Auth: On');
+        dialogs.success(context, 'Sucesso', 'API rodando');
       } else {
         dialogs.error(
             context, 'Erro', 'Erro ao conectar-se a API, verifique o ip');
@@ -35,29 +35,31 @@ class _MenuState extends State<Menu> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                    Color.fromARGB(255, 119, 159, 192),
-                    Color.fromARGB(255, 26, 88, 139),
-                  ])),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: RichText(
-                      textAlign: TextAlign.left,
-                      text: const TextSpan(children: [
-                        TextSpan(
-                          text: 'Bem Vindo!',
-                          style: TextStyle(color: Colors.white, fontSize: 24),
-                        ),
-                      ])),
-                ),
-              )),
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    Color.fromARGB(255, 16, 62, 100),
+                    Color.fromARGB(255, 37, 81, 117),
+                    Color.fromARGB(255, 66, 117, 158),
+                    Color.fromARGB(255, 80, 153, 212),
+                  ]),
+            ),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bem Vindo!',
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                  ),
+                ],
+              ),
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Início'),
@@ -77,8 +79,7 @@ class _MenuState extends State<Menu> {
             title: const Text('Testar API'),
             onTap: () {
               setState(() {
-                //service.tryPingSo();
-                service.tryPings();
+                service.Ping();
               });
             },
           ),
